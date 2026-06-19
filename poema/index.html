@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Poema interactivo | Geometrías Vivas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<div class="topbar" id="progressBar"></div>
+
+<div class="poema-screen">
+  <div class="poema-card">
+    <div class="stamp blanco">Escritura viva</div>
+    <div class="poema-intro reveal">
+      <p>Basado en un poema que nombra cuerpo, tierra y cansancio.</p>
+      <p>Mueve el mouse sobre las palabras para que el verso se repiense como un gesto físico.</p>
+    </div>
+
+    <div class="poema-texto" id="poemaTexto">
+      <p class="poema-line"><span class="poema-word">¿que</span> <span class="poema-word">es</span> <span class="poema-word">un</span> <span class="poema-word">animal</span> <span class="poema-word">vertebrado?</span></p>
+      <p class="poema-line"><span class="poema-word">¿un</span> <span class="poema-word">animal</span> <span class="poema-word">vertebrado</span> <span class="poema-word">que</span> <span class="poema-word">es?</span></p>
+      <p class="poema-line"><span class="poema-word">corazón,</span> <span class="poema-word">coraza,</span></p>
+      <p class="poema-line"><span class="poema-word">pie,</span> <span class="poema-word">callo,</span></p>
+      <p class="poema-line"><span class="poema-word">callo</span> <span class="poema-word">en</span> <span class="poema-word">los</span> <span class="poema-word">pies.</span></p>
+      <p class="poema-line"><span class="poema-word">me</span> <span class="poema-word">callo...</span></p>
+      <p class="poema-line"><span class="poema-word">columna</span> <span class="poema-word">vertebral</span> <span class="poema-word">al</span> <span class="poema-word">suelo.</span></p>
+      <p class="poema-line"><span class="poema-word">pavimento,</span> <span class="poema-word">tierra,</span></p>
+      <p class="poema-line"><span class="poema-word">tierra,</span> <span class="poema-word">pavimento,</span></p>
+      <p class="poema-line"><span class="poema-word">madera...</span></p>
+      <p class="poema-line"><span class="poema-word">cansado</span> <span class="poema-word">de</span> <span class="poema-word">renacer,</span></p>
+      <p class="poema-line"><span class="poema-word">cansado</span> <span class="poema-word">de</span> <span class="poema-word">morir,</span></p>
+      <p class="poema-line"><span class="poema-word">podrido</span> <span class="poema-word">en</span> <span class="poema-word">realidad.</span></p>
+    </div>
+  </div>
+</div>
+
+<script>
+  gsap.registerPlugin(ScrollTrigger);
+
+  gsap.set('#progressBar', { scaleX: 0, transformOrigin: 'left center' });
+  ScrollTrigger.create({
+    trigger: 'body',
+    start: 'top top',
+    end: 'bottom bottom',
+    scrub: 0.3,
+    onUpdate: self => gsap.set('#progressBar', { scaleX: self.progress })
+  });
+
+  const lines = gsap.utils.toArray('.poema-line');
+  const words = gsap.utils.toArray('.poema-word');
+  const container = document.querySelector('.poema-screen');
+
+  gsap.from('.poema-intro p', {
+    opacity: 0,
+    y: 30,
+    duration: 0.9,
+    ease: 'power2.out',
+    stagger: 0.18
+  });
+
+  gsap.fromTo('.poema-card',
+    { opacity: 0, y: 80 },
+    {
+      opacity: 1,
+      y: 0,
+      duration: 1.2,
+      ease: 'power3.out',
+      scrollTrigger: {
+        trigger: '.poema-screen',
+        start: 'top 90%',
+        end: 'top 70%',
+        scrub: 0.6
+      }
+    }
+  );
+
+  lines.forEach(line => {
+    gsap.fromTo(line,
+      { opacity: 0, y: 40, skewY: 4 },
+      {
+        opacity: 1,
+        y: 0,
+        skewY: 0,
+        duration: 1,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: line,
+          start: 'top 85%',
+          toggleActions: 'play none none none'
+        }
+      }
+    );
+  });
+
+  gsap.to('.poema-card', {
+    y: -24,
+    ease: 'none',
+    scrollTrigger: {
+      trigger: '.poema-screen',
+      start: 'top bottom',
+      end: 'bottom top',
+      scrub: 1.2
+    }
+  });
+
+  container.addEventListener('mousemove', event => {
+    const rect = container.getBoundingClientRect();
+    const mx = (event.clientX - rect.left) / rect.width - 0.5;
+    const my = (event.clientY - rect.top) / rect.height - 0.5;
+
+    gsap.to(words, {
+      x: i => mx * (10 + (i % 6) * 4),
+      y: i => my * (8 + (i % 4) * 3),
+      rotation: i => mx * 8 - (i % 3) * 2,
+      duration: 0.9,
+      ease: 'power3.out'
+    });
+  });
+
+  container.addEventListener('mouseleave', () => {
+    gsap.to(words, {
+      x: 0,
+      y: 0,
+      rotation: 0,
+      duration: 0.7,
+      ease: 'power2.out'
+    });
+  });
+
+  words.forEach(word => {
+    word.addEventListener('mouseenter', () => {
+      gsap.to(word, {
+        scale: 1.12,
+        color: 'var(--rojo)',
+        textShadow: '0 0 16px rgba(209, 0, 0, 0.65)',
+        duration: 0.24,
+        ease: 'power2.out'
+      });
+    });
+    word.addEventListener('mouseleave', () => {
+      gsap.to(word, {
+        scale: 1,
+        color: 'inherit',
+        textShadow: 'none',
+        duration: 0.18,
+        ease: 'power2.out'
+      });
+    });
+    word.addEventListener('click', () => {
+      gsap.fromTo(word, {
+        scale: 1.4,
+        opacity: 0.6
+      }, {
+        scale: 1,
+        opacity: 1,
+        duration: 0.32,
+        ease: 'power1.out'
+      });
+    });
+  });
+</script>
+</body>
+</html>
